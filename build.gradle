@@ -31,12 +31,24 @@ dependencies {
     // 2. 롬복
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-    // 5. 비크립트 알고리즘 라이브러리
+    // 3. 비크립트 알고리즘 라이브러리
     implementation 'org.springframework.security:spring-security-crypto:6.4.4'
-    // 6. J(자바)JWT 라이브러리
+    // 4. J(자바)JWT 라이브러리
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // 5. 데이터베이스  MySql JDBC
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    // 6. JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // 7. Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // 8. AWS S3
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1'
+
 }
 
 tasks.named('test') {
