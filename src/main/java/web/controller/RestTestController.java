@@ -3,7 +3,6 @@ package web.controller;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import web.model.entity.TestEntity;
 import web.service.RestTestService;
 
@@ -34,9 +33,4 @@ public class RestTestController {
         return restTestService.test3( content );
     }
 
-    // 4. S3 (파일 업로드/삭제 ) REST
-    @PostMapping("/s3")     // [POST] http://localhost:8080/test/s3 , multipart/form-data , file
-    public String test4(  MultipartFile file ){
-        return restTestService.test4( file );
-    }
 }
