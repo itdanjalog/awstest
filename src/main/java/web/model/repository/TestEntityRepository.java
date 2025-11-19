@@ -6,4 +6,5 @@ import web.model.entity.TestEntity;
 
 @Repository
 public interface TestEntityRepository extends JpaRepository<TestEntity , Integer > {
+
 }

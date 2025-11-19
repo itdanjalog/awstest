@@ -28,15 +28,4 @@ public class RestTestController {
         return restTestService.test2( content );
     }
 
-    // 3. REDIS( 캐싱 ) REST
-    @PostMapping("/cache") // [POST] http://localhost:8080/test/cache?content=캐싱
-    public List<String> test3( @RequestParam String content ){
-        return restTestService.test3( content );
-    }
-
-    // 4. S3 (파일 업로드/삭제 ) REST
-    @PostMapping("/s3")     // [POST] http://localhost:8080/test/s3 , multipart/form-data , file
-    public String test4(  MultipartFile file ){
-        return restTestService.test4( file );
-    }
 }
