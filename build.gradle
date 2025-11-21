@@ -1,8 +1,9 @@
+// 그레이들이란 ? 외부 라이브러리 설치/관리 프로그램
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
-    // Node Gradle 플러그인 추가
+    // 자바+그레이들 환경에서 NODE 라이브러리 설치한다.
     id "com.github.node-gradle.node" version "7.0.1" // 최신 호환 버전 확인 권장
 }
 
@@ -50,9 +51,6 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-
-
-
 // --- React 빌드 관련 Task 정의 (이전과 동일) ---
 
 // 1. npm install 실행 Task (React 의존성 설치)
@@ -79,6 +77,9 @@ task npmBuildReact(type: NpmTask) {
     outputs.dir("src/main/reactapp/dist")
 }
 
+// 3. 리액트가 실행되고 실행된 결과물을 스프링의 resources 폴더에 복제
+// 스프링 환경에 리액트 빌드(실행) 결과를 넣어서 스프링 환경에서 리액트 통합
+// 스프링 : 8080 , 리액트 : 5173  : 2개의 서버를 스프링8080 으로 통합
 task copyReactBuild(type: Copy) {
     description = "Copy React build output to Spring Boot static resources"
     dependsOn npmBuildReact
@@ -87,14 +88,15 @@ task copyReactBuild(type: Copy) {
     into "${project.buildDir}/resources/main/static"
 }
 
-// --- Task 의존성 설정 (이전과 동일) ---
-processResources {
-    dependsOn copyReactBuild
-}
-
 // --- Clean Task (이전과 동일) ---
 clean {
     delete file("${project.projectDir}/src/main/reactapp/node_modules")
     // *** 사용하는 React 빌드 도구에 맞춰 'dist' 또는 'build'로 수정! ***
     delete file("${project.projectDir}/src/main/reactapp/dist")
 }
+
+// --- Task 의존성 설정 (이전과 동일) ---
+processResources {
+    dependsOn copyReactBuild
+}
+

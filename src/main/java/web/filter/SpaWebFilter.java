@@ -1,9 +1,7 @@
-package web.controller;
+package web.filter;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component; // Component 스캔으로 필터 등록
 
 import java.io.IOException;
@@ -13,23 +11,20 @@ import java.util.List;
 @Component // Spring Bean으로 등록하여 필터 체인에 자동으로 추가되도록 함
 public class SpaWebFilter implements Filter {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     // 필터링에서 제외할 경로 시작 패턴 목록 (API 경로, 정적 리소스 등)
     // 실제 프로젝트의 API 경로 접두사, 정적 리소스 경로에 맞게 수정해야 합니다.
     private final List<String> EXCLUDE_PATHS = Arrays.asList(
-            "/api/",       // 모든 API 호출
-            "/static/",    // 정적 리소스 (Create React App 기본)
-            "/assets/"    // 정적 리소스 (Vite 기본)
+            "/api/",       // 백엔드controller 모든 API 호출
+            "/static/",    // 프론트엔드REACT , 정적 리소스 (Create React App 기본)
+            "/assets/"   // 정적 리소스 (Vite 기본)
             // 다른 백엔드 전용 경로 추가 가능
     );
 
     // 필터링에서 제외할 특정 파일 확장자 또는 파일명
     // точка(.)를 포함하지만 SPA 라우팅으로 처리해야 하는 경우는 여기에 추가하지 않음
     private final List<String> EXCLUDE_FILES = Arrays.asList(
-            "/favicon.ico",
-            "/robots.txt"
-            // 다른 특정 정적 파일 추가 가능
+            "/favicon.ico", // 다른 특정 정적 파일 추가 가능
+            "/robots.txt" // 데이터 데이터 사용 권한 명시 파일 (기능x)
     );
 
 
@@ -37,18 +32,19 @@ public class SpaWebFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
+        // 1. HTTP 모든 요청이 들어오면 해당 URL 가져오기
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String path = httpRequest.getRequestURI();
 
-        // 제외 경로 패턴 또는 제외 파일/확장자에 해당하지 않으면 index.html로 포워딩
+        // 2. 백엔드내 존재하지 않은 경로는 리액트(index.html) 이동한다.
+        // 리액트는 SPA( html 1개 )
         if (shouldForwardToSpa(path)) {
-            logger.debug("SPA WebFilter: Forwarding request to /index.html for path: {}", path);
             RequestDispatcher dispatcher = request.getRequestDispatcher("/index.html");
             dispatcher.forward(request, response);
             return; // 포워딩 후 필터 체인 중단
         }
 
-        // API 호출이나 정적 리소스 요청 등은 그대로 필터 체인 계속 진행
+        // 3. 만약에 백엔드에 존재하는 경로는 백엔드 컨트롤러 이동
         chain.doFilter(request, response);
     }
 
@@ -67,7 +63,7 @@ public class SpaWebFilter implements Filter {
             return false; // 일단 확장자 있는 경로는 제외
         }
 
-        // 위 조건에 모두 해당하지 않으면 SPA 라우팅 대상일 가능성이 높음
+        // * 위 3가지 필터 제외하면 그외 SPA의 라우터 경로임을 명시 함으로
         return true;
     }
 
