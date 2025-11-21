@@ -70,7 +70,7 @@ task npmInstallReact(type: NpmTask) {
 task npmBuildReact(type: NpmTask) {
     description = "Build the React application using npm run build"
     dependsOn npmInstallReact
-    workingDir = file("${project.projectDir}/src/main/reactapp") // <<<--- 작업 디렉토리 명시적 지정
+    workingDir = file("${project.projectDir}/src/main/reactapp")
     args = ['run', 'build']
     inputs.dir("src/main/reactapp/src")
     inputs.dir("src/main/reactapp/public")

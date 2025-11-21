@@ -20,9 +20,7 @@ public class SpaWebFilter implements Filter {
     private final List<String> EXCLUDE_PATHS = Arrays.asList(
             "/api/",       // 모든 API 호출
             "/static/",    // 정적 리소스 (Create React App 기본)
-            "/assets/",    // 정적 리소스 (Vite 기본)
-            "/swagger-ui", // Swagger UI (사용 시)
-            "/v3/api-docs" // Swagger Docs (사용 시)
+            "/assets/"    // 정적 리소스 (Vite 기본)
             // 다른 백엔드 전용 경로 추가 가능
     );
 
@@ -30,7 +28,6 @@ public class SpaWebFilter implements Filter {
     // точка(.)를 포함하지만 SPA 라우팅으로 처리해야 하는 경우는 여기에 추가하지 않음
     private final List<String> EXCLUDE_FILES = Arrays.asList(
             "/favicon.ico",
-            "/manifest.json",
             "/robots.txt"
             // 다른 특정 정적 파일 추가 가능
     );
@@ -65,11 +62,8 @@ public class SpaWebFilter implements Filter {
             return false;
         }
         // 3. 경로에 .(점)이 포함되어 파일 확장자를 가질 가능성이 높은 경우 제외 (단순 휴리스틱)
-        //    주의: 이 조건은 /users/john.doe 같은 경로도 제외시킬 수 있어 완벽하지 않음
-        //    정적 리소스 경로를 명확히 하는 것이 더 좋음
         if (path.contains(".") && path.lastIndexOf('.') > path.lastIndexOf('/')) {
             // 예외: 점을 포함하지만 SPA 라우트인 경우 (예: /profile/user.name) 여기에 로직 추가 가능
-            // return true;
             return false; // 일단 확장자 있는 경로는 제외
         }
 
