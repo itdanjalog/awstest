@@ -1,1 +1,59 @@
+name: RootLab Spring Server Deploy
 
+on:
+  push:
+    branches: [ "STEP5" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Git Source Code Checkout
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      # 2. JDK 설치 (Spring Boot 3.x 기준)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'   # gradle 캐싱
+
+      # 3. Gradle 권한 부여
+      - name: Add permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 4. Build
+      - name: Build Spring Boot (bootJar)
+        run: ./gradlew clean bootJar
+        shell: bash
+
+      # 5. 현재 시간으로 버전 이름 생성
+      - name: Versioning
+        uses: 1466587594/get-current-time@v2
+        id: time
+        with:
+          format: YYYY-MM-DD-HH-mm-ss
+          utcOffset: "+09:00"
+
+      # 6. 생성된 JAR 파일명 환경변수로 저장
+      - name: Set artifact name
+        run: echo "ARTIFACT=$(ls ./build/libs | grep '.jar')" >> $GITHUB_ENV
+
+      # 7. AWS EB 배포
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ap-northeast-2
+
+          # 🔥 당신 프로젝트 기준 EB 설정
+          application_name: springweb
+          environment_name: Springweb-env 
+
+          version_label: "rootlab-${{ steps.time.outputs.formattedTime }}"
+          deployment_package: "./build/libs/${{ env.ARTIFACT }}"
+          wait_for_environment_recovery: 30
