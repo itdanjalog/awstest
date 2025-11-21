@@ -28,13 +28,11 @@ public class FileUtil {
 
     // 자동 설정된 S3Client (AWS SDK v2) 주입
     private final S3Client s3Client;
-    // application.properties에서 버킷 이름 주입 (새로운 키 사용)
+    // application.properties(EB 환경에서 설정한) 에서 버킷 이름 주입 (새로운 키 사용)
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
-    /**
-     * 파일을 S3에 업로드합니다 (AWS SDK v2 사용).
-     */
+    /* 파일을 S3에 업로드합니다 (AWS SDK v2 사용).  */
     public String fileUpload(MultipartFile multipartFile) {
         if (multipartFile == null || multipartFile.isEmpty()) {// log.warn("업로드할 파일이 비어 있습니다."); // 로깅 제거
             return null;
@@ -46,20 +44,22 @@ public class FileUtil {
         try (InputStream inputStream = multipartFile.getInputStream()) {
             // S3에 업로드할 객체 요청 생성 (SDK v2)
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(objectKey)
-                    .contentType(multipartFile.getContentType())
-                    .acl(ObjectCannedACL.PUBLIC_READ) // 필요시 접근 권한 설정 (Public Read)
+                    .bucket(bucket) // 버킷명
+                    .key(objectKey) // 파일명( uuid )
+                    .contentType(multipartFile.getContentType()) // 파일 확장자
+                    .acl(ObjectCannedACL.PUBLIC_READ) // 필요시 접근 권한 설정 (Public Read , PRIVATE : 저장용 )
                     .build();
             // 파일 업로드 실행 (SDK v2)
             s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(inputStream, multipartFile.getSize()));
+            // ======================= 업로드 성공한 객체 url 반환 ============== //
             // 업로드된 객체의 URL 가져오기 (SDK v2)
             GetUrlRequest getUrlRequest = GetUrlRequest.builder()
                     .bucket(bucket)
                     .key(objectKey)
                     .build();
             String fileUrl = s3Client.utilities().getUrl(getUrlRequest).toString();
+            // ======================= 활용 : fileUrl 를 DB(RDS) 저장한다. ============== //
             return fileUrl;
         } catch (Exception e) { // 기타 예외 처리
             System.err.println("Unexpected error during upload: " + e.getMessage()); // 간단한 표준 에러 출력 (디버깅용)
@@ -67,9 +67,7 @@ public class FileUtil {
         }
     }
 
-    /**
-     * S3에서 객체(파일)를 삭제합니다 (AWS SDK v2 사용).
-     */
+    /* S3에서 객체(파일)를 삭제합니다 (AWS SDK v2 사용).*/
     public boolean fileDelete(String objectKey) {
         if (objectKey == null || objectKey.isBlank()) {  // log.warn("삭제할 객체 키가 null이거나 비어있습니다."); // 로깅 제거
             return false;
